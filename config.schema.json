@@ -233,14 +233,28 @@
               },
               "minWhiteColor": {
                 "type": "integer",
-                "placeholder": "140",
+                "placeholder": "0",
                 "condition": {
                   "functionBody": "return model.devices && model.devices[arrayIndices] && ['TWLight', 'RGBTWLight','RGBTWOutlet'].includes(model.devices[arrayIndices].type);"
                 }
               },
               "maxWhiteColor": {
                 "type": "integer",
-                "placeholder": "400",
+                "placeholder": "1000",
+                "condition": {
+                  "functionBody": "return model.devices && model.devices[arrayIndices] && ['TWLight', 'RGBTWLight','RGBTWOutlet'].includes(model.devices[arrayIndices].type);"
+                }
+              },
+              "minKelvin": {
+                "type": "integer",
+                "placeholder": "2700",
+                "condition": {
+                  "functionBody": "return model.devices && model.devices[arrayIndices] && ['TWLight', 'RGBTWLight','RGBTWOutlet'].includes(model.devices[arrayIndices].type);"
+                }
+              },
+              "maxKelvin": {
+                "type": "integer",
+                "placeholder": "6500",
                 "condition": {
                   "functionBody": "return model.devices && model.devices[arrayIndices] && ['TWLight', 'RGBTWLight','RGBTWOutlet'].includes(model.devices[arrayIndices].type);"
                 }
@@ -267,13 +281,6 @@
                 }
               },
               "scaleBrightness": {
-                "type": "integer",
-                "placeholder": "255",
-                "condition": {
-                  "functionBody": "return model.devices && model.devices[arrayIndices] && ['RGBTWLight','RGBTWOutlet'].includes(model.devices[arrayIndices].type);"
-                }
-              },
-              "scaleWhiteColor": {
                 "type": "integer",
                 "placeholder": "255",
                 "condition": {
