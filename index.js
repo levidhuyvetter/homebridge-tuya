@@ -102,13 +102,34 @@ class TuyaLan {
 
         const deviceIds = Object.keys(devices);
         if (deviceIds.length === 0) return this.log.error('No valid configured devices found.');
+        const [ipDeviceIds, discoveryDeviceIds] = deviceIds.reduce(
+            (r, id) => (devices[id].ip ? r[0].push(id) : r[1].push(id), r),
+            [[], []]
+        );
+        
+        // NEW: connect immediately to devices with a manual IP before discovery begins
+        ipDeviceIds.forEach(deviceId => {
+            const cfg = devices[deviceId];
+            if (cfg.ip) {
+                this.log.info('Connecting directly to %s (%s) via %s.', cfg.name, deviceId, cfg.ip);
+        
+                const device = new TuyaAccessory({
+                    ...cfg,
+                    log: this.log,
+                    UUID: UUID.generate(PLUGIN_NAME + ':' + deviceId),
+                    connect: false
+                });
+                this.addAccessory(device);
+            }
+        });
 
         this.log.info('Starting discovery...');
 
-        TuyaDiscovery.start({ids: deviceIds, log: this.log})
+        TuyaDiscovery.start({ids: discoveryDeviceIds, log: this.log})
             .on('discover', config => {
                 if (!config || !config.id) return;
                 if (!devices[config.id]) return this.log.warn('Discovered a device that has not been configured yet (%s@%s).', config.id, config.ip);
+                if (devices[config.id].ip) return; //Device should have been connected by direct ip, ignoring discovery
 
                 connectedDevices.push(config.id);
 
@@ -134,23 +155,9 @@ class TuyaLan {
         });
 
         setTimeout(() => {
-            deviceIds.forEach(deviceId => {
+            discoveryDeviceIds.forEach(deviceId => {
                 if (connectedDevices.includes(deviceId)) return;
-
-                if (devices[deviceId].ip) {
-
-                    this.log.info('Failed to discover %s (%s) in time but will connect via %s.', devices[deviceId].name, deviceId, devices[deviceId].ip);
-
-                    const device = new TuyaAccessory({
-                        ...devices[deviceId],
-                        log: this.log,
-                        UUID: UUID.generate(PLUGIN_NAME + ':' + deviceId),
-                        connect: false
-                    });
-                    this.addAccessory(device);
-                } else {
-                    this.log.warn('Failed to discover %s (%s) in time but will keep looking.', devices[deviceId].name, deviceId);
-                }
+                this.log.warn('Failed to discover %s (%s) in time but will keep looking.', devices[deviceId].name, deviceId);
             });
         }, 60000);
     }
